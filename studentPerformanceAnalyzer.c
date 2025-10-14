@@ -47,21 +47,14 @@ char getGrade(double avg) {
 }
 
 void printPerformance(char grade) {
-    int stars = 0;
-    if (grade == 'A') stars = 5;
-    else if (grade == 'B') stars = 4;
-    else if (grade == 'C') stars = 3;
-    else if (grade == 'D') stars = 2;
+    if (grade == 'A') printf("Performance: *****\n");
+    else if (grade == 'B') printf("Performance: ****\n");
+    else if (grade == 'C') printf("Performance: ***\n");
+    else if (grade == 'D') printf("Performance: **\n");
     else return;
-
-    printf("Performance: ");
-    for (int i = 0; i < stars; i++) {
-        printf("*");
-    }
-    printf("\n");
 }
 
-int isDuplicateRoll(int roll, int list[], int count) {
+int isDuplicateRollNumber(int roll, int list[], int count) {
     for (int i = 0; i < count; i++) {
         if (list[i] == roll) return 1;
     }
@@ -80,7 +73,7 @@ void sortRollNumbers(int arr[], int size) {
     }
 }
 
-void printRollsRecursive(int rolls[], int index, int size) {
+void printRollNumbers(int rolls[], int index, int size) {
     if (index == size) {
         printf("\n");
         return;
@@ -130,7 +123,7 @@ int main() {
                 continue;
             }
 
-            if (isDuplicateRoll(roll, rolls, i)) {
+            if (isDuplicateRollNumber(roll, rolls, i)) {
                 printf("Roll Number already exists. Please enter a unique roll number.\n");
                 continue;
             }
@@ -181,7 +174,7 @@ int main() {
     sortRollNumbers(rolls, studentCount);
 
     printf("List of Roll Numbers: ");
-    printRollsRecursive(rolls, 0, studentCount);
+    printRollNumbers(rolls, 0, studentCount);
 
     return 0;
 }
