@@ -4,124 +4,133 @@
 
 #define MAX 10
 
-int getSize() {
-    int n;
-    char line[100];
+int getMatrixSize() {
+    int matrixSize;
+    char inputLine[100];
 
     while (1) {
         printf("Enter matrix size (2-10): ");
-        if (!fgets(line, sizeof(line), stdin)) {
+        if (!fgets(inputLine, sizeof(inputLine), stdin)) {
             printf("Input error. Try again.\n");
             continue;
         }
 
-        char extra;
-        if (sscanf(line, "%d %c", &n, &extra) != 1 || n < 2 || n > 10) {
+        char extraChar;
+        if (sscanf(inputLine, "%d %c", &matrixSize, &extraChar) != 1 || matrixSize < 2 || matrixSize > 10) {
             printf("Values could be integral only in range 2-10\n");
             continue;
         }
 
-        return n;
+        return matrixSize;
     }
 }
 
-void print(unsigned char (*mat)[MAX], int n) {
-    for (int i = 0; i < n; i++) {
-        unsigned char* row = *(mat + i);
-        for (int j = 0; j < n; j++) {
-            printf("%4d", *(row + j));
+void printMatrix(unsigned char (*matrix)[MAX], int matrixSize) {
+    for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
+        unsigned char* currentRow = *(matrix + rowIndex);
+        for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
+            printf("%4d", *(currentRow + columnIndex));
         }
         printf("\n");
     }
 }
 
-void rotate(unsigned char (*mat)[MAX], int n) {
-    for (int layer = 0; layer < n / 2; layer++) {
-        int first = layer;
-        int last = n - 1 - layer;
-        for (int i = first; i < last; i++) {
-            int offset = i - first;
+void rotateMatrixClockwise(unsigned char (*matrix)[MAX], int matrixSize) {
+    int firstIndex = 0;
+    int lastIndex = 0;
+    int offsetIndex = 0;
+    for (int layerIndex = 0; layerIndex < matrixSize / 2; layerIndex++) {
+        firstIndex = layerIndex;
+        lastIndex = matrixSize - 1 - layerIndex;
+        for (int currentIndex = firstIndex; currentIndex < lastIndex; currentIndex++) {
+            offsetIndex = currentIndex - firstIndex;
 
-            unsigned char* a = (*(mat + first)) + i;
-            unsigned char* b = (*(mat + (last - offset))) + first;
-            unsigned char* c = (*(mat + last)) + (last - offset);
-            unsigned char* d = (*(mat + i)) + last;
+            unsigned char* topElement = (*(matrix + firstIndex)) + currentIndex;
+            unsigned char* leftElement = (*(matrix + (lastIndex - offsetIndex))) + firstIndex;
+            unsigned char* bottomElement = (*(matrix + lastIndex)) + (lastIndex - offsetIndex);
+            unsigned char* rightElement = (*(matrix + currentIndex)) + lastIndex;
 
-            unsigned char temp = *a;
-            *a = *b;
-            *b = *c;
-            *c = *d;
-            *d = temp;
+            unsigned char temporaryValue = *topElement;
+            *topElement = *leftElement;
+            *leftElement = *bottomElement;
+            *bottomElement = *rightElement;
+            *rightElement = temporaryValue;
         }
     }
 }
 
-void smooth(unsigned char (*mat)[MAX], int n) {
-    unsigned char currRow[MAX];
-    unsigned char prevRow[MAX];
+void applySmoothingFilter(unsigned char (*matrix)[MAX], int matrixSize) {
+    unsigned char currentRowAverages[MAX];
+    unsigned char previousRowAverages[MAX];
 
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            int sum = 0;
-            int count = 0;
+    int valueSum = 0;
+    int neighborCount = 0;
+    int neighborRow = 0;
+    int neighborColumn = 0;
 
-            for (int dx = -1; dx <= 1; dx++) {
-                int ni = i + dx;
-                if (ni < 0 || ni >= n) continue;
 
-                for (int dy = -1; dy <= 1; dy++) {
-                    int nj = j + dy;
-                    if (nj < 0 || nj >= n) continue;
+    for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
+        for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
+            valueSum = 0;
+            neighborCount = 0;
 
-                    sum += *(*(mat + ni) + nj);
-                    count++;
+            for (int rowOffset = -1; rowOffset <= 1; rowOffset++) {
+                neighborRow = rowIndex + rowOffset;
+                if (neighborRow < 0 || neighborRow >= matrixSize) continue;
+
+                for (int columnOffset = -1; columnOffset <= 1; columnOffset++) {
+                    neighborColumn = columnIndex + columnOffset;
+                    if (neighborColumn < 0 || neighborColumn >= matrixSize) continue;
+
+                    valueSum += *(*(matrix + neighborRow) + neighborColumn);
+                    neighborCount++;
                 }
             }
 
-            *(currRow + j) = sum / count;
+            *(currentRowAverages + columnIndex) = valueSum / neighborCount;
         }
 
-        if (i > 0) {
-            for (int j = 0; j < n; j++) {
-                *(*(mat + i - 1) + j) = *(prevRow + j);
+        if (rowIndex > 0) {
+            for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
+                *(*(matrix + rowIndex - 1) + columnIndex) = *(previousRowAverages + columnIndex);
             }
         }
 
-        for (int j = 0; j < n; j++) {
-            *(prevRow + j) = *(currRow + j);
+        for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
+            *(previousRowAverages + columnIndex) = *(currentRowAverages + columnIndex);
         }
     }
 
-    for (int j = 0; j < n; j++) {
-        *(*(mat + n - 1) + j) = *(prevRow + j);
+    for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
+        *(*(matrix + matrixSize - 1) + columnIndex) = *(previousRowAverages + columnIndex);
     }
 }
 
 int main() {
-    int n = getSize();
+    int matrixSize = getMatrixSize();
     unsigned char matrix[MAX][MAX];
 
     srand((unsigned int)time(NULL));
 
-    for (int i = 0; i < n; i++) {
-        unsigned char* row = *(matrix + i);
-        for (int j = 0; j < n; j++) {
-            *(row + j) = rand() % 256;
+    for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
+        unsigned char* currentRow = *(matrix + rowIndex);
+        for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
+            *(currentRow + columnIndex) = rand() % 256;
         }
     }
 
     printf("\nOriginal:\n");
-    print(matrix, n);
+    printMatrix(matrix, matrixSize);
 
-    rotate(matrix, n);
+    rotateMatrixClockwise(matrix, matrixSize);
 
     printf("\nRotated:\n");
-    print(matrix, n);
+    printMatrix(matrix, matrixSize);
 
-    smooth(matrix, n);
+    applySmoothingFilter(matrix, matrixSize);
 
     printf("\nFinal Output:\n");
-    print(matrix, n);
+    printMatrix(matrix, matrixSize);
 
     return 0;
 }
