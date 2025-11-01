@@ -119,11 +119,14 @@ void addProduct(Product **productList, int *productCount) {
         printf("Cannot add more products (limit reached).\n");
         return;
     }
-    *productList = realloc(*productList, (*productCount + 1) * sizeof(Product));
-    if (*productList == NULL) {
-        printf("\nMemory allocation failed!\n");
+    Product *temp = realloc(*productList, (*productCount + 1) * sizeof(Product));
+    if (temp == NULL) {
+        printf("Memory allocation failed!\n");
+        free(*productList);
         exit(1);
     }
+    *productList = temp;
+    
     printf("Enter new product details:\n");
     int newID;
     while (1) {
