@@ -387,8 +387,6 @@ void menuDisplayAllPlayersOfSpecificRoleAcrossTeams(void) {
     free(arr);
 }
 
-int comparePlayersForFreeSorting(const void *a, const void *b) { return 0; }
-
 void freeAllAllocatedMemoryAndExit(void) {
     for (size_t i = 0; i < allocatedPlayerPointerCount; ++i) free(allocatedPlayerPointers[i]);
     free(allocatedPlayerPointers);
