@@ -233,6 +233,44 @@ void displayPlayerFullLine(const PlayerNode *p) {
     printf("%-6d %-20s %-12s %8ld %7.2f %6.1f %6d %6.1f %11.2f\n", p->playerId, p->playerName, roleString, p->totalRuns, p->battingAverage, p->strikeRate, p->wickets, p->economyRate, p->performanceIndex);
 }
 
+int suggestAvailablePlayerIds(void) {
+    printf("Player ID already exists. Do you want suggestions for available IDs?\n");
+    printf("1. Yes, suggest 5 available IDs\n");
+    printf("2. No, I will enter manually\n");
+
+    int choice = readIntegerInRange("Enter your choice: ", 1, 2);
+    if (choice == 2) return 0;
+
+    int suggestedIds[5];
+    int count = 0;
+
+    while (count < 5) {
+        int randomId = (rand() % 1500) + 1;
+        if (!isPlayerIdAlreadyPresent(randomId)) {
+            int duplicate = 0;
+            for (int i = 0; i < count; i++) {
+                if (suggestedIds[i] == randomId) {
+                    duplicate = 1;
+                    break;
+                }
+            }
+            if (!duplicate) {
+                suggestedIds[count] = randomId;
+                count++;
+            }
+        }
+    }
+
+    printf("Available Player ID suggestions: ");
+    for (int i = 0; i < 5; i++) {
+        printf("%d", suggestedIds[i]);
+        if (i != 4) printf(", ");
+    }
+    printf("\n");
+
+    return 1;
+}
+
 void menuAddNewPlayerToTeam(void) {
     printf("\n-- Add Player to Team --\n");
     int teamId = readIntegerInRange("Enter Team ID to add player (1..10): ", 1, totalNumberOfTeamsLocal);
@@ -243,7 +281,10 @@ void menuAddNewPlayerToTeam(void) {
     int playerId;
     while (1) {
         playerId = readIntegerInRange("Player ID (1..1500): ", 1, 1500);
-        if (isPlayerIdAlreadyPresent(playerId)) { printf("ERROR: A player with ID %d already exists. Please enter a unique Player ID.\n", playerId); }
+        if (isPlayerIdAlreadyPresent(playerId)) {
+            printf("\nERROR: A player with ID %d already exists.\n", playerId);
+            suggestAvailablePlayerIds();
+        }
         else break;
     }
     char name[MAX_NAME_LENGTH];
